@@ -1,7 +1,5 @@
 package net.ghiassy.smstoemailforwarder;
 
-
-
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -30,19 +28,25 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
     private String subject;
     private String message;
 
-    private String USEREMAIL = "sms.hexor@gmail.com";
-    private String PASSWORD = "1985Saeed";
-    private String SMTPServer = "smtp.gmail.com";
+    private String USEREMAIL;
+    private String PASSWORD;
+    private String SMTPServer;
+    private int Port;
+
+    public String x;
+
+    Properties props;
+
+    UserInfo userInfo;
 
     //Progressdialog to show while sending email
     private ProgressDialog progressDialog;
 
     //Class Constructor
-    public SendMail(String email, String subject, String message)
+    public SendMail(UserInfo userInfo,
+                    String subject, String message)
     {
-        //Initializing variables
-        //this.context = context;
-        this.email = email;
+        this.userInfo = userInfo;
         this.subject = subject;
         this.message = message;
     }
@@ -67,7 +71,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
     @Override
     protected Void doInBackground(Void... params) {
         //Creating properties
-        Properties props = new Properties();
+        props = new Properties();
 
         //Configuring properties for gmail
         //If you are not using gmail you may need to change the values

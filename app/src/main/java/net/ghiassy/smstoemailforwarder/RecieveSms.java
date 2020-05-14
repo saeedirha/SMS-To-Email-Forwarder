@@ -48,8 +48,9 @@ public class RecieveSms extends BroadcastReceiver {
                         SimpleDateFormat formatter = new SimpleDateFormat("E dd/MM/yyyy HH:mm:ss");
                         String strDate= formatter.format(new Date());
 
-                        SendMail mailer = new SendMail(EmailAddress, "Date: " + strDate +" From: " + msg_from ,  msg_body);
-                        mailer.execute();
+//                        SendMail mailer = new SendMail(EmailAddress, "Date: " + strDate +" From: " + msg_from ,  msg_body);
+//                        mailer.execute();
+
 
                         mListener.messageReceived(msg_body, msg_from);
 
