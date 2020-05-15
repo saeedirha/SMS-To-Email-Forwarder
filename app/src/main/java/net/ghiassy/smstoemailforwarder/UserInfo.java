@@ -2,6 +2,8 @@ package net.ghiassy.smstoemailforwarder;
 
 public class UserInfo
 {
+    public static final String TAG = "UserInfo";
+
     public String SMTPServer;
     public String Username;
     public String Password;
@@ -18,7 +20,6 @@ public class UserInfo
         this.ReceiverEmail = receiverEmail;
         this.Port = port;
     }
-
 
     public String getSMTPServer() {
         return SMTPServer;

@@ -1,9 +1,12 @@
 package net.ghiassy.smstoemailforwarder;
 
-import android.app.ProgressDialog;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
 import java.util.Properties;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -18,75 +21,92 @@ import javax.mail.internet.MimeMessage;
 
 //Class is extending AsyncTask because this class is going to perform a networking operation
 public class SendMail extends AsyncTask<Void,Void,Void> {
+    public static final String TAG = "SendMail";
 
     //Declaring Variables
-    //private Context context;
     private Session session;
-
-    //Information to send email
-    private String email;
     private String subject;
     private String message;
 
-    private String USEREMAIL;
-    private String PASSWORD;
-    private String SMTPServer;
-    private int Port;
 
-    public String x;
+    private boolean isTTLS, isAuth, isSelfSign, isSSL;
 
     Properties props;
-
     UserInfo userInfo;
-
-    //Progressdialog to show while sending email
-    private ProgressDialog progressDialog;
 
     //Class Constructor
     public SendMail(UserInfo userInfo,
+                    boolean isTTLS, boolean isAuth,
+                    boolean isSSL, boolean isSelfSign,
                     String subject, String message)
     {
         this.userInfo = userInfo;
+
+        this.isTTLS = isTTLS;
+        this.isAuth = isAuth;
+        this.isSSL = isSSL;
+        this.isSelfSign = isSelfSign;
         this.subject = subject;
         this.message = message;
     }
+
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
 //        //Showing progress dialog while sending email
-//        progressDialog = ProgressDialog.show(context,"Sending message","Please wait...",false,false);
     }
 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        //Dismissing the progress dialog
-//        progressDialog.dismiss();
-//        //Showing a success message
-//        Toast.makeText(context,"Message Sent",Toast.LENGTH_LONG).show();
+
         Log.i("Sending Email.....", "Email Sent!");
+    }
+
+    private void setProperties()
+    {
+        props = new Properties();
+
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.host", userInfo.getSMTPServer());
+        props.put("mail.smtp.port", String.valueOf(userInfo.getPort()));
+
+        if(isTTLS)
+        {
+            props.put("mail.smtp.starttls.enable", "true");
+        }
+        if(isAuth)
+        {
+            props.put("mail.smtp.auth", "true");
+        }
+        if(isSSL)
+        {
+            props.put("mail.smtp.socketFactory.port", String.valueOf(userInfo.getPort()));
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            props.put("mail.smtp.ssl.enable", "true");
+        }
+        if(isSelfSign)
+        {
+            props.put("mail.smtp.ssl.trust", "*");
+        }
+
     }
 
     @Override
     protected Void doInBackground(Void... params) {
-        //Creating properties
-        props = new Properties();
 
-        //Configuring properties for gmail
-        //If you are not using gmail you may need to change the values
-        props.put("mail.smtp.host", SMTPServer);
-        props.put("mail.smtp.socketFactory.port", "465");
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.port", "465");
+        //Creating properties
+        setProperties();
 
         //Creating a new session
-        session = Session.getDefaultInstance(props,
+        session = null;
+        session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
                     //Authenticating the password
                     protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(USEREMAIL, PASSWORD);
+                        //Log.i(TAG + "++Session++++" , userInfo.getUsername());
+                        return new PasswordAuthentication(userInfo.getUsername(), userInfo.getPassword());
                     }
                 });
 
@@ -95,9 +115,9 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
             MimeMessage mm = new MimeMessage(session);
 
             //Setting sender address
-            mm.setFrom(new InternetAddress(USEREMAIL));
+            mm.setFrom(new InternetAddress(userInfo.getUsername()));
             //Adding receiver
-            mm.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            mm.addRecipient(Message.RecipientType.TO, new InternetAddress(userInfo.getReceiverEmail()));
             //Adding subject
             mm.setSubject(subject);
             //Adding message

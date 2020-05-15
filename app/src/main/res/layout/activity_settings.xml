@@ -32,7 +32,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:ems="10"
-        android:hint="@android:string/httpErrorUnsupportedScheme"
+        android:hint="Port"
         android:inputType="numberSigned"
         android:text="587"
         android:textAlignment="center"
@@ -46,7 +46,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:ems="10"
         android:hint="Username:"
@@ -60,7 +59,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:ems="10"
         android:hint="Password:"
@@ -74,37 +72,62 @@
         android:id="@+id/ckBoxTTLS"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:checked="true"
         android:text="Start TTLS"
-        app:layout_constraintStart_toStartOf="@+id/txtPassword"
+        app:layout_constraintEnd_toStartOf="@+id/ckBoxSSL"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtPassword" />
+
+    <CheckBox
+        android:id="@+id/ckBoxSSL"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:onClick="checkBoxSSLActivated"
+        android:text="Use SSL"
+        app:layout_constraintEnd_toStartOf="@+id/ckBoxAuth"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/ckBoxTTLS"
         app:layout_constraintTop_toBottomOf="@+id/txtPassword" />
 
     <CheckBox
         android:id="@+id/ckBoxAuth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
         android:checked="true"
         android:text="Auth "
         app:layout_constraintBottom_toTopOf="@+id/ckBoxSelfSing"
-        app:layout_constraintEnd_toEndOf="@+id/ckBoxSelfSing" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/ckBoxSSL"
+        app:layout_constraintTop_toBottomOf="@+id/txtPassword" />
 
     <CheckBox
         android:id="@+id/ckBoxSelfSing"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:text="Accept Self-Signed SSL Certificate"
-        app:layout_constraintStart_toStartOf="@+id/ckBoxTTLS"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ckBoxTTLS" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:constraint_referenced_ids="ckBoxTTLS,ckBoxAuth,ckBoxSelfSing"
+        android:layout_width="64dp"
+        android:layout_height="61dp"
+        app:constraint_referenced_ids="ckBoxTTLS,ckBoxAuth,ckBoxSSL,ckBoxSelfSing"
         app:layout_constraintBottom_toTopOf="@+id/txtSMTPAddress"
         app:layout_constraintEnd_toStartOf="@+id/txtSMTPAddress"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/txtSMTPAddress"
-        app:layout_constraintTop_toTopOf="@+id/txtSMTPAddress" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <EditText
         android:id="@+id/txtReceiverEmail"
@@ -114,6 +137,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:ems="10"
+        android:imeOptions="actionDone"
         android:hint="Recipient Email Address:"
         android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
@@ -124,12 +148,11 @@
         android:id="@+id/btnSendTest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         android:onClick="btnSendClick"
         android:text="Send Test Email"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.022"
+        app:layout_constraintEnd_toStartOf="@+id/btnSaveSettings"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtReceiverEmail" />
 
@@ -137,18 +160,19 @@
         android:id="@+id/btnSaveSettings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="112dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:onClick="btnSaveSettingsClick"
         android:text="Save Settings"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.971"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btnSendTest"
         app:layout_constraintTop_toBottomOf="@+id/txtReceiverEmail" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="194dp"
+        android:layout_height="49dp"
         app:constraint_referenced_ids="btnSendTest,btnSaveSettings"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp" />
@@ -189,6 +213,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:enabled="false"
         android:onClick="btnStopMonitoringClick"
         android:text="Stop Monitoring"
         app:layout_constraintEnd_toEndOf="parent"
