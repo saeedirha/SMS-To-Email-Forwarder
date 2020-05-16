@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,7 +15,6 @@ public class RecieveSms extends BroadcastReceiver {
     public static final String TAG = "ReceiveSMS";
 
     private static MessageListener mListener;
-    public static final String EmailAddress="";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -40,10 +38,6 @@ public class RecieveSms extends BroadcastReceiver {
 
                         Log.i("SMS Received: " ,"From " + msg_from + " Content: " + msg_body );
 
-                        if(EmailAddress.isEmpty() || EmailAddress.equals(""))
-                        {
-                            Toast.makeText(context, "Email Address Cannot be empty!", Toast.LENGTH_LONG).show();
-                        }
 
                         SimpleDateFormat formatter = new SimpleDateFormat("E dd/MM/yyyy HH:mm:ss");
                         String strDate= formatter.format(new Date());

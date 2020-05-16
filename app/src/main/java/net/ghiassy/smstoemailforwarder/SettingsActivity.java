@@ -1,13 +1,18 @@
 package net.ghiassy.smstoemailforwarder;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -15,6 +20,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,7 +30,10 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
-public class SettingsActivity extends AppCompatActivity {
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class SettingsActivity extends AppCompatActivity implements MessageListener{
 
     public static final String TAG = "SettingsActivity";
 
@@ -33,11 +42,13 @@ public class SettingsActivity extends AppCompatActivity {
     TextView txtViewSMTP, txtViewPort , txtViewUsername, txtViewPassword, txtViewReceiverEmail;
     CheckBox isTTLS, isAuth, isSelfSign, isSSL;
 
+    Button btnStop, btnStart, btnHide;
+
     SharedPreferences sharedPreferences;
     UserInfo userInfo;
 
 
-
+//=========================================================================//
     public void btnSendClick(View view)
     {
         closeKeyboard();
@@ -87,23 +98,38 @@ public class SettingsActivity extends AppCompatActivity {
         sharedPreferences.edit().putBoolean("isSSL", isSSL.isChecked()).apply();
         sharedPreferences.edit().putBoolean("isSelfSign", isSelfSign.isChecked()).apply();
 
+        LoadUserInfo();
+
         Toast.makeText(this, "Information Saved.", Toast.LENGTH_SHORT).show();
 
     }
+
+
     public void btnStartMonitoringClick(View view)
     {
         closeKeyboard();
-        Toast.makeText(this, "Start", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Start Monitoring", Toast.LENGTH_SHORT).show();
+        btnStop.setEnabled(true);
+        btnStart.setEnabled(false);
+        LoadUserInfo();
+
+
+        RecieveSms.bindListener(this);
 
     }
     public void btnStopMonitoringClick(View view)
     {
         Toast.makeText(this, "Stop", Toast.LENGTH_SHORT).show();
+        btnStop.setEnabled(false);
+        btnStart.setEnabled(true);
+
+        RecieveSms.bindListener(null);
 
     }
     public void btnHideWindowClick(View view)
     {
         Toast.makeText(this, "Hide", Toast.LENGTH_SHORT).show();
+        finish();
 
     }
 
@@ -135,8 +161,14 @@ public class SettingsActivity extends AppCompatActivity {
         isSSL.setChecked(sharedPreferences.getBoolean("isSSL", false));
         isSelfSign.setChecked(sharedPreferences.getBoolean("isSelfSign", false));
 
-
-
+        LoadUserInfo();
+    }
+    public void LoadUserInfo()
+    {
+        userInfo = new UserInfo(txtViewSMTP.getText().toString(), sharedPreferences.getInt("Port", 587),
+                txtViewUsername.getText().toString(),
+                txtViewPassword.getText().toString(),
+                txtViewReceiverEmail.getText().toString());
     }
 
     //basic error check
@@ -186,6 +218,24 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+
+    //=========================================================================//
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        //super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 1000)
+        {
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(this, "NO Permission!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -212,10 +262,14 @@ public class SettingsActivity extends AppCompatActivity {
         isTTLS = findViewById(R.id.ckBoxTTLS);
         isSSL = findViewById(R.id.ckBoxSSL);
 
+        btnStart = findViewById(R.id.btnStartMonitoring);
+        btnStop = findViewById(R.id.btnStopMonitoring);
+        btnHide = findViewById(R.id.btnHideWindow);
+
 
         if(getIntent().getBooleanExtra("LoadSettings", false))
         {
-            Toast.makeText(this, "Load Settings", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Load Settings", Toast.LENGTH_SHORT).show();
             LoadSettings();
         }
 
@@ -224,6 +278,36 @@ public class SettingsActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         ads1.loadAd(adRequest);
 
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M  && checkSelfPermission(Manifest.permission.RECEIVE_SMS)
+                != PackageManager.PERMISSION_GRANTED)
+        {
+            requestPermissions(new String[]{Manifest.permission.RECEIVE_SMS}, 1000);
+        }
+
     }
 
+    @Override
+    public void messageReceived(String smsMessage, String smsSender) {
+        //Toast.makeText(this, "Message: " + smsMessage, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "SMS Received!", Toast.LENGTH_SHORT).show();
+        SimpleDateFormat formatter = new SimpleDateFormat("E dd/MM/yyyy HH:mm:ss");
+        String strDate= formatter.format(new Date());
+
+        if(userInfo !=null)
+        {
+            //Toast.makeText(this, userInfo.getUsername(), Toast.LENGTH_SHORT).show();
+
+            sendMail = new SendMail(userInfo,
+                    isTTLS.isChecked(), isAuth.isChecked(),isSSL.isChecked(),isSelfSign.isChecked(),
+                    "Date: " + strDate +" From: " + smsSender ,
+                    smsMessage);
+            sendMail.execute();
+        }
+
+
+    }
 }
